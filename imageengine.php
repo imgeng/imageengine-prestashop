@@ -139,6 +139,18 @@ class ImageEngine extends Module
                 </p>
             </div>
             ';
+        $accountLink = 'https://control.imageengine.io/?utm_source=prestashop_module&utm_medium=imageengine&utm_campaign=admin';
+        $currentCdnUrl = Configuration::get(self::CFG_URL);
+        if (empty($currentCdnUrl) || strpos($currentCdnUrl, 'imgeng.in') === false) {
+            $textAccountInfo = 'Don\'t have an account yet? <br/>'
+                . '<a class="btn btn-primary" target="_blank" href="https://control.imageengine.io/register/website/?website='
+                . $websiteOrigin
+                . '"><i class="material-icons">call_made</i>&nbsp; Claim your ImageEngine Account</a>';
+        } else {
+            $textAccountInfo =
+                '<a class="btn btn-primary" target="_blank" href="'
+                . $accountLink . '"><i class="material-icons">call_made</i>&nbsp; ImageEngine Account Control Panel</a>';
+        }
 
         if (
             !empty(Configuration::get(self::PS_MEDIA_1))
@@ -186,10 +198,9 @@ class ImageEngine extends Module
                         'type' => 'text',
                         'label' => $this->l('CDN URL'),
                         'name' => self::CFG_URL,
-                        'desc' => 'Don\'t have an account yet? <br/>'
-                            . '<a class="btn btn-primary" target="_blank" href="https://control.imageengine.io/register/website/?website='
-                            . $websiteOrigin
-                            . '"><i class="material-icons">call_made</i>&nbsp; Claim your ImageEngine Account</a>'
+                        'desc' =>
+                            $textAccountInfo
+                            // below we display info panels unrelated to CDN URL field, until we refactor to a template
                             . '<br/>' . $textMediaServerWarning
                             . '<br/>' . $textInfo
                     ],
