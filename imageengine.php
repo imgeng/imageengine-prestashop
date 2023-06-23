@@ -6,12 +6,48 @@ if (!defined('_PS_VERSION_')) {
 
 class ImageEngine extends Module
 {
+    /**
+     * Client hints.
+     *
+     * @var []string
+     */
+    private static $client_hints = array(
+        'sec-ch-dpr',
+        'sec-ch-width',
+        'sec-ch-viewport-width',
+        'ect', //kept in for legacy reasons
+        'sec-ch-ect',
+        'sec-ch-ua-full-version',
+        'sec-ch-ua-full-version-list',
+        'sec-ch-ua-platform-version',
+        'sec-ch-ua-arch',
+        'sec-ch-ua-wow64',
+        'sec-ch-ua-bitness',
+        'sec-ch-ua-model',
+        /**
+         * Disabled for CORS compatibility:
+         * 'ECT',
+         * 'Device-Memory',
+         * 'RTT',
+         * 'Downlink',
+         */
+    );
+
+    private const CFG_ACTIVE = 'IMAGEENGINE_ACTIVE';
+    private const CFG_URL = 'IMAGEENGINE_CDN_URL';
+    private const CFG_PRECONNECT = 'IMAGEENGINE_PRECONNECT';
+    private const CFG_CLIENT_HINTS = 'IMAGEENGINE_CLIENT_HINTS';
+    private const CFG_PERMISSIONS_POLICY = 'IMAGEENGINE_PERMISSIONS_POLICY';
+    private const PS_MEDIA_1 = 'PS_MEDIA_SERVER_1';
+    private const PS_MEDIA_2 = 'PS_MEDIA_SERVER_2';
+    private const PS_MEDIA_3 = 'PS_MEDIA_SERVER_3';
+
     public function __construct()
     {
         $this->name = 'imageengine';
         $this->tab = 'front_office_features';
         $this->version = '1.0.0';
-        $this->author = 'Modig Agency';
+        $this->author = 'ImageEngine.io';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
             'min' => '1.7.0.0',
@@ -39,6 +75,7 @@ class ImageEngine extends Module
         return (
             parent::install()
             && $this->registerHook('displayAfterTitleTag')
+            && $this->registerHook('displayHeader')
         );
     }
 
@@ -51,8 +88,11 @@ class ImageEngine extends Module
         $output = null;
 
         if (Tools::isSubmit('submit' . $this->name)) {
-            $configValueActive = (bool) Tools::getValue('IMAGEENGINE_ACTIVE');
-            $configValueUrl = (string) Tools::getValue('IMAGEENGINE_CDN_URL');
+            $configValueActive = (bool) Tools::getValue(self::CFG_ACTIVE);
+            $configValueUrl = (string) Tools::getValue(self::CFG_URL);
+            $configValuePreconnect = (bool) Tools::getValue(self::CFG_PRECONNECT);
+            $configValueClientHints = (bool) Tools::getValue(self::CFG_CLIENT_HINTS);
+            $configValuePermissionsPolicy = (bool) Tools::getValue(self::CFG_PERMISSIONS_POLICY);
             $validDomain = $this->isValidDomain($configValueUrl);
 
             if ($configValueActive && (!Validate::isUrl($configValueUrl) || !$validDomain)) {
@@ -60,23 +100,26 @@ class ImageEngine extends Module
             } else {
                 if ($configValueActive) {
                     // Set media servers 1
-                    Configuration::updateValue('PS_MEDIA_SERVER_1', $configValueUrl);
+                    Configuration::updateValue(self::PS_MEDIA_1, $configValueUrl);
                     // Erase media servers 2 & 3 if set
-                    if (Configuration::get('PS_MEDIA_SERVER_2')) {
-                        Configuration::updateValue('PS_MEDIA_SERVER_2', '');
+                    if (Configuration::get(self::PS_MEDIA_2)) {
+                        Configuration::updateValue(self::PS_MEDIA_2, '');
                     }
-                    if (Configuration::get('PS_MEDIA_SERVER_3')) {
-                        Configuration::updateValue('PS_MEDIA_SERVER_3', '');
+                    if (Configuration::get(self::PS_MEDIA_3)) {
+                        Configuration::updateValue(self::PS_MEDIA_3, '');
                     }
                 } else {
                     // Erase media server 1 only if it is set to same value as ImageEngine CDN URL
-                    if (Configuration::get('IMAGEENGINE_CDN_URL') == Configuration::get('PS_MEDIA_SERVER_1')) {
-                        Configuration::updateValue('PS_MEDIA_SERVER_1', '');
+                    if ($configValueUrl == Configuration::get(self::PS_MEDIA_1)) {
+                        Configuration::updateValue(self::PS_MEDIA_1, '');
                     }
                 }
 
-                Configuration::updateValue('IMAGEENGINE_CDN_URL', $configValueUrl);
-                Configuration::updateValue('IMAGEENGINE_ACTIVE', $configValueActive);
+                Configuration::updateValue(self::CFG_URL, $configValueUrl);
+                Configuration::updateValue(self::CFG_ACTIVE, $configValueActive);
+                Configuration::updateValue(self::CFG_PRECONNECT, $configValuePreconnect);
+                Configuration::updateValue(self::CFG_CLIENT_HINTS, $configValueClientHints);
+                Configuration::updateValue(self::CFG_PERMISSIONS_POLICY, $configValuePermissionsPolicy);
             }
 
             $output .= $this->displayConfirmation($this->l('Settings updated'));
@@ -98,16 +141,17 @@ class ImageEngine extends Module
             ';
 
         if (
-            !empty(Configuration::get('PS_MEDIA_SERVER_1'))
-            && Configuration::get('PS_MEDIA_SERVER_1') != Configuration::get('IMAGEENGINE_CDN_URL')
+            !empty(Configuration::get(self::PS_MEDIA_1))
+            && Configuration::get(self::PS_MEDIA_1) != Configuration::get(self::CFG_URL)
         ) {
             $mediaServerLink = $this->context->link->getAdminLink('AdminPerformance', true) . '#media_servers_media_server_one';
             $textMediaServerWarning = '
             <div class="alert medium-alert alert-warning" role="alert">
                 <p class="alert-text">
-                    We detected you are already using a media server: '.Configuration::get('PS_MEDIA_SERVER_1').'<br/>
+                    We detected you are already using a media server: ' . Configuration::get(self::PS_MEDIA_1)
+                . '<br/>
                     Enabling ImageEngine CDN will overwrite your current media server configuration.<br/>
-                    <a href="'.$mediaServerLink.'">Click here to check your media server configuration</a>.
+                    <a href="' . $mediaServerLink . '">Click here to check your media server configuration</a>.
                 </p>
             </div>
             ';
@@ -122,7 +166,7 @@ class ImageEngine extends Module
                     [
                         'type' => 'switch',
                         'label' => $this->l('Enable CDN'),
-                        'name' => 'IMAGEENGINE_ACTIVE',
+                        'name' => self::CFG_ACTIVE,
                         'required' => true,
                         'is_bool' => true,
                         'values' => [
@@ -141,7 +185,7 @@ class ImageEngine extends Module
                     [
                         'type' => 'text',
                         'label' => $this->l('CDN URL'),
-                        'name' => 'IMAGEENGINE_CDN_URL',
+                        'name' => self::CFG_URL,
                         'desc' => 'Don\'t have an account yet? <br/>'
                             . '<a class="btn btn-primary" target="_blank" href="https://control.imageengine.io/register/website/?website='
                             . $websiteOrigin
@@ -151,8 +195,46 @@ class ImageEngine extends Module
                     ],
                     [
                         'type' => 'switch',
-                        'label' => $this->l('Add preconnect headers to all pages'),
-                        'name' => 'IMAGEENGINE_PRECONNECT',
+                        'label' => $this->l('Add Preconnect directive to all pages'),
+                        'name' => self::CFG_PRECONNECT,
+                        'required' => true,
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled')
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled')
+                            ]
+                        ]
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Add Client hints directives to all pages'),
+                        'name' => self::CFG_CLIENT_HINTS,
+                        'required' => true,
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled')
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled')
+                            ]
+                        ]
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Add Permissions policy directives to all pages'),
+                        'name' => self::CFG_PERMISSIONS_POLICY,
                         'required' => true,
                         'is_bool' => true,
                         'values' => [
@@ -187,8 +269,11 @@ class ImageEngine extends Module
 
         $helper->default_form_language = (int) Configuration::get('PS_LANG_DEFAULT');
 
-        $helper->fields_value['IMAGEENGINE_CDN_URL'] = Tools::getValue('IMAGEENGINE_CDN_URL', Configuration::get('IMAGEENGINE_CDN_URL'));
-        $helper->fields_value['IMAGEENGINE_ACTIVE'] = Tools::getValue('IMAGEENGINE_ACTIVE', Configuration::get('IMAGEENGINE_ACTIVE'));
+        $helper->fields_value[self::CFG_ACTIVE] = Tools::getValue(self::CFG_ACTIVE, Configuration::get(self::CFG_ACTIVE));
+        $helper->fields_value[self::CFG_URL] = Tools::getValue(self::CFG_URL, Configuration::get(self::CFG_URL));
+        $helper->fields_value[self::CFG_PRECONNECT] = Tools::getValue(self::CFG_PRECONNECT, Configuration::get(self::CFG_PRECONNECT));
+        $helper->fields_value[self::CFG_CLIENT_HINTS] = Tools::getValue(self::CFG_CLIENT_HINTS, Configuration::get(self::CFG_CLIENT_HINTS));
+        $helper->fields_value[self::CFG_PERMISSIONS_POLICY] = Tools::getValue(self::CFG_PERMISSIONS_POLICY, Configuration::get(self::CFG_PERMISSIONS_POLICY));
 
         return $helper->generateForm([$form]);
     }
@@ -207,19 +292,66 @@ class ImageEngine extends Module
     }
 
     /**
-     * Inject preconnect header directive meta tag
+     * Inject preconnect and client hints as meta tags
      * <link rel="preconnect" href="https://xyz.cdn.imgeng.in">
      */
     public function hookDisplayAfterTitleTag(array $params): string
     {
-        if (
-            ((bool) Configuration::get('IMAGEENGINE_ACTIVE') === true)
-            && ((bool) Configuration::get('IMAGEENGINE_PRECONNECT') === true)
-        ) {
-            $cdnUrl = Configuration::get('IMAGEENGINE_CDN_URL');
-            $fullCdnUrl = (Tools::usingSecureMode() ? 'https://' : 'http://') . $cdnUrl;
-            return '<link rel="preconnect" href="' . $fullCdnUrl . '">';
+        $html = '';
+        if ((bool) Configuration::get(self::CFG_ACTIVE) !== true) {
+            return $html;
         }
-        return '';
+
+        // Preconnect link / Resource hints
+        if ((bool) Configuration::get(self::CFG_PRECONNECT) === true) {
+            $cdnUrl = Configuration::get(self::CFG_URL);
+            $fullCdnUrl = (Tools::usingSecureMode() ? 'https://' : 'http://') . $cdnUrl;
+            $html .= '    <link rel="preconnect" href="' . $fullCdnUrl . '">' . "\n";
+        }
+
+        // Client hints
+        if ((bool) Configuration::get(self::CFG_CLIENT_HINTS) === true) {
+            $html .= '    <meta http-equiv="Accept-CH" content="' . (implode(', ', self::$client_hints)) . '">' . "\n";
+        }
+
+        // Tip: Permissions policy cannot be sent as meta http-equiv, so it remains only in the response headers
+
+        return $html;
+    }
+
+    /**
+     * Inject response header directives: preconnect, client hints, permissions policy
+     */
+    public function hookDisplayHeader(array $params): void
+    {
+        if ((bool) Configuration::get(self::CFG_ACTIVE) !== true) {
+            return;
+        }
+
+        $host = Configuration::get(self::CFG_URL);
+        $protocol = sprintf("http%s", Tools::usingSecureMode() ? 's' : '');
+
+        // Preconnect header / Resource hints
+        if ((bool) Configuration::get(self::CFG_PRECONNECT) === true) {
+            header( 'Link: ' . "<{$protocol}://{$host}>; rel=preconnect" );
+        }
+
+        // Client hints header
+        if ((bool) Configuration::get(self::CFG_CLIENT_HINTS) === true) {
+            header( 'Accept-CH: '. strtolower( implode( ', ', self::$client_hints ) ) );
+        }
+
+        // Permissions policy header
+        if ((bool) Configuration::get(self::CFG_PERMISSIONS_POLICY) === true) {
+            $permissions = array();
+            foreach (self::$client_hints as $hint) {
+                $get_hint = str_replace('sec-', '', $hint);
+                if ($get_hint === 'ect') continue;
+                $permissions[] = strtolower("{$get_hint}=(\"{$protocol}://{$host}\")");
+            }
+            // This header replaced Feature-Policy in Chrome 88, released in January 2021.
+            // @see https://github.com/w3c/webappsec-permissions-policy/blob/main/permissions-policy-explainer.md#appendix-big-changes-since-this-was-called-feature-policy .
+            header('Permissions-Policy: ' . strtolower(implode(', ', $permissions)));
+        }
     }
 }
