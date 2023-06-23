@@ -167,6 +167,20 @@ class ImageEngine extends Module
                 </p>
             </div>
             ';
+        } else if (
+            empty(Configuration::get(self::PS_MEDIA_1))
+            && !empty(Configuration::get(self::CFG_URL))
+        ) {
+            $mediaServerLink = $this->context->link->getAdminLink('AdminPerformance', true) . '#media_servers_media_server_one';
+            $textMediaServerWarning = '
+            <div class="alert medium-alert alert-warning" role="alert">
+                <p class="alert-text">
+                    We detected an invalid configuration state: Media server is empty while ImageEngine CDN is enabled.<br/>
+                    Please Save configuration on this page to set proper Media server value.<br/>
+                    You can also <a href="' . $mediaServerLink . '">click here to check your media server configuration</a>.
+                </p>
+            </div>
+            ';
         }
 
         $form = [
