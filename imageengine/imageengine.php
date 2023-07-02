@@ -74,7 +74,6 @@ class ImageEngine extends Module
 
         return (
             parent::install()
-            && $this->registerHook('displayAfterTitleTag')
             && $this->registerHook('displayHeader')
         );
     }
@@ -120,9 +119,9 @@ class ImageEngine extends Module
                 Configuration::updateValue(self::CFG_PRECONNECT, $configValuePreconnect);
                 Configuration::updateValue(self::CFG_CLIENT_HINTS, $configValueClientHints);
                 Configuration::updateValue(self::CFG_PERMISSIONS_POLICY, $configValuePermissionsPolicy);
-            }
 
-            $output .= $this->displayConfirmation($this->l('Settings updated'));
+                $output .= $this->displayConfirmation($this->l('Settings updated'));
+            }
         }
 
         return $output . $this->displayForm();
@@ -315,35 +314,7 @@ class ImageEngine extends Module
 
         return false;
     }
-
-    /**
-     * Inject preconnect and client hints as meta tags
-     * <link rel="preconnect" href="https://xyz.cdn.imgeng.in">
-     */
-    public function hookDisplayAfterTitleTag(array $params): string
-    {
-        $html = '';
-        if ((bool) Configuration::get(self::CFG_ACTIVE) !== true) {
-            return $html;
-        }
-
-        // Preconnect link / Resource hints
-        if ((bool) Configuration::get(self::CFG_PRECONNECT) === true) {
-            $cdnUrl = Configuration::get(self::CFG_URL);
-            $fullCdnUrl = (Tools::usingSecureMode() ? 'https://' : 'http://') . $cdnUrl;
-            $html .= '    <link rel="preconnect" href="' . $fullCdnUrl . '">' . "\n";
-        }
-
-        // Client hints
-        if ((bool) Configuration::get(self::CFG_CLIENT_HINTS) === true) {
-            $html .= '    <meta http-equiv="Accept-CH" content="' . (implode(', ', self::$client_hints)) . '">' . "\n";
-        }
-
-        // Tip: Permissions policy cannot be sent as meta http-equiv, so it remains only in the response headers
-
-        return $html;
-    }
-
+    
     /**
      * Inject response header directives: preconnect, client hints, permissions policy
      */
