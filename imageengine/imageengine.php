@@ -11,11 +11,9 @@
  * @copyright   Since 2023 ImageEngine.io
  * @license     http://www.opensource.org/licenses/mit-license.html  MIT License
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-
 class ImageEngine extends Module
 {
     /**
@@ -77,10 +75,7 @@ class ImageEngine extends Module
             Shop::setContext(Shop::CONTEXT_ALL);
         }
 
-        return (
-            parent::install()
-            && $this->registerHook('displayHeader')
-        );
+        return (parent::install() && $this->registerHook('displayHeader'));
     }
 
     /**
@@ -209,15 +204,14 @@ class ImageEngine extends Module
                                 'id' => 'active_off',
                                 'value' => 0,
                                 'label' => $this->l('Disabled')
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
                     [
                         'type' => 'text',
                         'label' => $this->l('CDN URL'),
                         'name' => self::CFG_URL,
-                        'desc' =>
-                            $textAccountInfo
+                        'desc' => $textAccountInfo
                             // below we display info panels unrelated to CDN URL field, until we refactor to a template
                             . '<br/>' . $textMediaServerWarning
                             . '<br/>' . $textInfo
@@ -238,8 +232,8 @@ class ImageEngine extends Module
                                 'id' => 'active_off',
                                 'value' => 0,
                                 'label' => $this->l('Disabled')
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
                     [
                         'type' => 'switch',
@@ -257,8 +251,8 @@ class ImageEngine extends Module
                                 'id' => 'active_off',
                                 'value' => 0,
                                 'label' => $this->l('Disabled')
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
                     [
                         'type' => 'switch',
@@ -276,8 +270,8 @@ class ImageEngine extends Module
                                 'id' => 'active_off',
                                 'value' => 0,
                                 'label' => $this->l('Disabled')
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
                 ],
                 'submit' => [
@@ -330,7 +324,7 @@ class ImageEngine extends Module
         }
 
         $host = Configuration::get(self::CFG_URL);
-        $protocol = sprintf("http%s", Tools::usingSecureMode() ? 's' : '');
+        $protocol = sprintf('http%s', Tools::usingSecureMode() ? 's' : '');
 
         // Preconnect header / Resource hints
         if ((bool)Configuration::get(self::CFG_PRECONNECT) === true) {
