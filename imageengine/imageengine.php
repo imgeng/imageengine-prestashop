@@ -1,4 +1,16 @@
 <?php
+/**
+ * 2023 ImageEngine.io
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE.
+ *
+ * @author      ImageEngine.io <https://imageengine.io>
+ * @copyright   Since 2023 ImageEngine.io
+ * @license     http://www.opensource.org/licenses/mit-license.html  MIT License
+ */
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -46,7 +58,7 @@ class ImageEngine extends Module
     {
         $this->name = 'imageengine';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.0.2';
         $this->author = 'ImageEngine.io';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -57,7 +69,7 @@ class ImageEngine extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('Image Engine');
+        $this->displayName = $this->l('Image Engine CDN');
         $this->description = $this->l('Automatically add ImageEngine CDN to media url.');
 
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
@@ -87,11 +99,11 @@ class ImageEngine extends Module
         $output = null;
 
         if (Tools::isSubmit('submit' . $this->name)) {
-            $configValueActive = (bool) Tools::getValue(self::CFG_ACTIVE);
-            $configValueUrl = (string) Tools::getValue(self::CFG_URL);
-            $configValuePreconnect = (bool) Tools::getValue(self::CFG_PRECONNECT);
-            $configValueClientHints = (bool) Tools::getValue(self::CFG_CLIENT_HINTS);
-            $configValuePermissionsPolicy = (bool) Tools::getValue(self::CFG_PERMISSIONS_POLICY);
+            $configValueActive = (bool)Tools::getValue(self::CFG_ACTIVE);
+            $configValueUrl = (string)Tools::getValue(self::CFG_URL);
+            $configValuePreconnect = (bool)Tools::getValue(self::CFG_PRECONNECT);
+            $configValueClientHints = (bool)Tools::getValue(self::CFG_CLIENT_HINTS);
+            $configValuePermissionsPolicy = (bool)Tools::getValue(self::CFG_PERMISSIONS_POLICY);
             $validDomain = $this->isValidDomain($configValueUrl);
 
             if ($configValueActive && (!Validate::isUrl($configValueUrl) || !$validDomain)) {
@@ -291,7 +303,7 @@ class ImageEngine extends Module
         $helper->currentIndex = AdminController::$currentIndex . '&' . http_build_query(['configure' => $this->name]);
         $helper->submit_action = 'submit' . $this->name;
 
-        $helper->default_form_language = (int) Configuration::get('PS_LANG_DEFAULT');
+        $helper->default_form_language = (int)Configuration::get('PS_LANG_DEFAULT');
 
         $helper->fields_value[self::CFG_ACTIVE] = Tools::getValue(self::CFG_ACTIVE, Configuration::get(self::CFG_ACTIVE));
         $helper->fields_value[self::CFG_URL] = Tools::getValue(self::CFG_URL, Configuration::get(self::CFG_URL));
@@ -314,13 +326,13 @@ class ImageEngine extends Module
 
         return false;
     }
-    
+
     /**
      * Inject response header directives: preconnect, client hints, permissions policy
      */
     public function hookDisplayHeader(array $params): void
     {
-        if ((bool) Configuration::get(self::CFG_ACTIVE) !== true) {
+        if ((bool)Configuration::get(self::CFG_ACTIVE) !== true) {
             return;
         }
 
@@ -328,17 +340,17 @@ class ImageEngine extends Module
         $protocol = sprintf("http%s", Tools::usingSecureMode() ? 's' : '');
 
         // Preconnect header / Resource hints
-        if ((bool) Configuration::get(self::CFG_PRECONNECT) === true) {
-            header( 'Link: ' . "<{$protocol}://{$host}>; rel=preconnect" );
+        if ((bool)Configuration::get(self::CFG_PRECONNECT) === true) {
+            header('Link: ' . "<{$protocol}://{$host}>; rel=preconnect");
         }
 
         // Client hints header
-        if ((bool) Configuration::get(self::CFG_CLIENT_HINTS) === true) {
-            header( 'Accept-CH: '. strtolower( implode( ', ', self::$client_hints ) ) );
+        if ((bool)Configuration::get(self::CFG_CLIENT_HINTS) === true) {
+            header('Accept-CH: ' . strtolower(implode(', ', self::$client_hints)));
         }
 
         // Permissions policy header
-        if ((bool) Configuration::get(self::CFG_PERMISSIONS_POLICY) === true) {
+        if ((bool)Configuration::get(self::CFG_PERMISSIONS_POLICY) === true) {
             $permissions = array();
             foreach (self::$client_hints as $hint) {
                 $get_hint = str_replace('sec-', '', $hint);
