@@ -33,7 +33,7 @@ class ImageEngine extends Module
         'sec-ch-ua-arch',
         'sec-ch-ua-wow64',
         'sec-ch-ua-bitness',
-        'sec-ch-ua-model'
+        'sec-ch-ua-model',
     ];
 
     private const CFG_ACTIVE = 'IMAGEENGINE_ACTIVE';
@@ -198,12 +198,12 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
+                                'label' => $this->l('Disabled'),
                             ],
                         ],
                     ],
@@ -214,7 +214,7 @@ class ImageEngine extends Module
                         'desc' => $textAccountInfo
                             // below we display info panels unrelated to CDN URL field, until we refactor to a template
                             . '<br/>' . $textMediaServerWarning
-                            . '<br/>' . $textInfo
+                            . '<br/>' . $textInfo,
                     ],
                     [
                         'type' => 'switch',
@@ -226,12 +226,12 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
+                                'label' => $this->l('Disabled'),
                             ],
                         ],
                     ],
@@ -245,12 +245,12 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
+                                'label' => $this->l('Disabled'),
                             ],
                         ],
                     ],
@@ -264,12 +264,12 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
+                                'label' => $this->l('Disabled'),
                             ],
                         ],
                     ],
@@ -341,7 +341,9 @@ class ImageEngine extends Module
             $permissions = [];
             foreach (self::$client_hints as $hint) {
                 $get_hint = str_replace('sec-', '', $hint);
-                if ($get_hint === 'ect') continue;
+                if ($get_hint === 'ect') {
+                    continue;
+                }
                 $permissions[] = strtolower("{$get_hint}=(\"{$protocol}://{$host}\")");
             }
             // This header replaced Feature-Policy in Chrome 88, released in January 2021.
