@@ -75,7 +75,7 @@ class ImageEngine extends Module
             Shop::setContext(Shop::CONTEXT_ALL);
         }
 
-        return (parent::install() && $this->registerHook('displayHeader'));
+        return parent::install() && $this->registerHook('displayHeader');
     }
 
     /**
@@ -87,11 +87,11 @@ class ImageEngine extends Module
         $output = null;
 
         if (Tools::isSubmit('submit' . $this->name)) {
-            $configValueActive = (bool)Tools::getValue(self::CFG_ACTIVE);
-            $configValueUrl = (string)Tools::getValue(self::CFG_URL);
-            $configValuePreconnect = (bool)Tools::getValue(self::CFG_PRECONNECT);
-            $configValueClientHints = (bool)Tools::getValue(self::CFG_CLIENT_HINTS);
-            $configValuePermissionsPolicy = (bool)Tools::getValue(self::CFG_PERMISSIONS_POLICY);
+            $configValueActive = (bool) Tools::getValue(self::CFG_ACTIVE);
+            $configValueUrl = (string) Tools::getValue(self::CFG_URL);
+            $configValuePreconnect = (bool) Tools::getValue(self::CFG_PRECONNECT);
+            $configValueClientHints = (bool) Tools::getValue(self::CFG_CLIENT_HINTS);
+            $configValuePermissionsPolicy = (bool) Tools::getValue(self::CFG_PERMISSIONS_POLICY);
             $validDomain = $this->isValidDomain($configValueUrl);
 
             if ($configValueActive && (!Validate::isUrl($configValueUrl) || !$validDomain)) {
@@ -290,7 +290,7 @@ class ImageEngine extends Module
         $helper->currentIndex = AdminController::$currentIndex . '&' . http_build_query(['configure' => $this->name]);
         $helper->submit_action = 'submit' . $this->name;
 
-        $helper->default_form_language = (int)Configuration::get('PS_LANG_DEFAULT');
+        $helper->default_form_language = (int) Configuration::get('PS_LANG_DEFAULT');
 
         $helper->fields_value[self::CFG_ACTIVE] = Tools::getValue(self::CFG_ACTIVE, Configuration::get(self::CFG_ACTIVE));
         $helper->fields_value[self::CFG_URL] = Tools::getValue(self::CFG_URL, Configuration::get(self::CFG_URL));
@@ -319,7 +319,7 @@ class ImageEngine extends Module
      */
     public function hookDisplayHeader(array $params): void
     {
-        if ((bool)Configuration::get(self::CFG_ACTIVE) !== true) {
+        if ((bool) Configuration::get(self::CFG_ACTIVE) !== true) {
             return;
         }
 
@@ -327,17 +327,17 @@ class ImageEngine extends Module
         $protocol = sprintf('http%s', Tools::usingSecureMode() ? 's' : '');
 
         // Preconnect header / Resource hints
-        if ((bool)Configuration::get(self::CFG_PRECONNECT) === true) {
+        if ((bool) Configuration::get(self::CFG_PRECONNECT) === true) {
             header('Link: ' . "<{$protocol}://{$host}>; rel=preconnect");
         }
 
         // Client hints header
-        if ((bool)Configuration::get(self::CFG_CLIENT_HINTS) === true) {
+        if ((bool) Configuration::get(self::CFG_CLIENT_HINTS) === true) {
             header('Accept-CH: ' . strtolower(implode(', ', self::$client_hints)));
         }
 
         // Permissions policy header
-        if ((bool)Configuration::get(self::CFG_PERMISSIONS_POLICY) === true) {
+        if ((bool) Configuration::get(self::CFG_PERMISSIONS_POLICY) === true) {
             $permissions = [];
             foreach (self::$client_hints as $hint) {
                 $get_hint = str_replace('sec-', '', $hint);
