@@ -23,11 +23,11 @@ class ImageEngine extends Module
      *
      * @var []string
      */
-    private static $client_hints = array(
+    private static $client_hints = [
         'sec-ch-dpr',
         'sec-ch-width',
         'sec-ch-viewport-width',
-        'ect', //kept in for legacy reasons
+        'ect', // kept in for legacy reasons
         'sec-ch-ect',
         'sec-ch-ua-full-version',
         'sec-ch-ua-full-version-list',
@@ -35,15 +35,8 @@ class ImageEngine extends Module
         'sec-ch-ua-arch',
         'sec-ch-ua-wow64',
         'sec-ch-ua-bitness',
-        'sec-ch-ua-model',
-        /**
-         * Disabled for CORS compatibility:
-         * 'ECT',
-         * 'Device-Memory',
-         * 'RTT',
-         * 'Downlink',
-         */
-    );
+        'sec-ch-ua-model'
+    ];
 
     private const CFG_ACTIVE = 'IMAGEENGINE_ACTIVE';
     private const CFG_URL = 'IMAGEENGINE_CDN_URL';
@@ -178,7 +171,7 @@ class ImageEngine extends Module
                 </p>
             </div>
             ';
-        } else if (
+        } elseif (
             empty(Configuration::get(self::PS_MEDIA_1))
             && !empty(Configuration::get(self::CFG_URL))
         ) {
@@ -351,7 +344,7 @@ class ImageEngine extends Module
 
         // Permissions policy header
         if ((bool)Configuration::get(self::CFG_PERMISSIONS_POLICY) === true) {
-            $permissions = array();
+            $permissions = [];
             foreach (self::$client_hints as $hint) {
                 $get_hint = str_replace('sec-', '', $hint);
                 if ($get_hint === 'ect') continue;
