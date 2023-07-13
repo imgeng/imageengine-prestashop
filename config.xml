@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>imageengine</name>
-    <displayName><![CDATA[Image Engine CDN]]></displayName>
+    <displayName><![CDATA[ImageEngine CDN]]></displayName>
     <version><![CDATA[1.0.2]]></version>
     <description><![CDATA[Automatically add ImageEngine CDN to media url.]]></description>
     <author><![CDATA[ImageEngine.io]]></author>

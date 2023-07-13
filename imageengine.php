@@ -60,7 +60,7 @@ class ImageEngine extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('Image Engine CDN');
+        $this->displayName = $this->l('ImageEngine CDN');
         $this->description = $this->l('Automatically add ImageEngine CDN to media url.');
 
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
