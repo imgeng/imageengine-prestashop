@@ -1,9 +1,19 @@
 <?php
-
+/**
+ * 2023 ImageEngine.io
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE.
+ *
+ * @author      ImageEngine.io <https://imageengine.io>
+ * @copyright   Since 2023 ImageEngine.io
+ * @license     http://www.opensource.org/licenses/mit-license.html  MIT License
+ */
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-
 class ImageEngine extends Module
 {
     /**
@@ -11,11 +21,11 @@ class ImageEngine extends Module
      *
      * @var []string
      */
-    private static $client_hints = array(
+    private static $client_hints = [
         'sec-ch-dpr',
         'sec-ch-width',
         'sec-ch-viewport-width',
-        'ect', //kept in for legacy reasons
+        'ect', // kept in for legacy reasons
         'sec-ch-ect',
         'sec-ch-ua-full-version',
         'sec-ch-ua-full-version-list',
@@ -24,14 +34,7 @@ class ImageEngine extends Module
         'sec-ch-ua-wow64',
         'sec-ch-ua-bitness',
         'sec-ch-ua-model',
-        /**
-         * Disabled for CORS compatibility:
-         * 'ECT',
-         * 'Device-Memory',
-         * 'RTT',
-         * 'Downlink',
-         */
-    );
+    ];
 
     private const CFG_ACTIVE = 'IMAGEENGINE_ACTIVE';
     private const CFG_URL = 'IMAGEENGINE_CDN_URL';
@@ -46,7 +49,7 @@ class ImageEngine extends Module
     {
         $this->name = 'imageengine';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.0.2';
         $this->author = 'ImageEngine.io';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -57,7 +60,7 @@ class ImageEngine extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('Image Engine');
+        $this->displayName = $this->l('ImageEngine CDN');
         $this->description = $this->l('Automatically add ImageEngine CDN to media url.');
 
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
@@ -72,10 +75,7 @@ class ImageEngine extends Module
             Shop::setContext(Shop::CONTEXT_ALL);
         }
 
-        return (
-            parent::install()
-            && $this->registerHook('displayHeader')
-        );
+        return parent::install() && $this->registerHook('displayHeader');
     }
 
     /**
@@ -166,7 +166,7 @@ class ImageEngine extends Module
                 </p>
             </div>
             ';
-        } else if (
+        } elseif (
             empty(Configuration::get(self::PS_MEDIA_1))
             && !empty(Configuration::get(self::CFG_URL))
         ) {
@@ -198,24 +198,23 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
-                            ]
-                        ]
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
                     ],
                     [
                         'type' => 'text',
                         'label' => $this->l('CDN URL'),
                         'name' => self::CFG_URL,
-                        'desc' =>
-                            $textAccountInfo
+                        'desc' => $textAccountInfo
                             // below we display info panels unrelated to CDN URL field, until we refactor to a template
                             . '<br/>' . $textMediaServerWarning
-                            . '<br/>' . $textInfo
+                            . '<br/>' . $textInfo,
                     ],
                     [
                         'type' => 'switch',
@@ -227,14 +226,14 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
-                            ]
-                        ]
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
                     ],
                     [
                         'type' => 'switch',
@@ -246,14 +245,14 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
-                            ]
-                        ]
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
                     ],
                     [
                         'type' => 'switch',
@@ -265,14 +264,14 @@ class ImageEngine extends Module
                             [
                                 'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('Enabled'),
                             ],
                             [
                                 'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Disabled')
-                            ]
-                        ]
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
                     ],
                 ],
                 'submit' => [
@@ -314,7 +313,7 @@ class ImageEngine extends Module
 
         return false;
     }
-    
+
     /**
      * Inject response header directives: preconnect, client hints, permissions policy
      */
@@ -325,24 +324,26 @@ class ImageEngine extends Module
         }
 
         $host = Configuration::get(self::CFG_URL);
-        $protocol = sprintf("http%s", Tools::usingSecureMode() ? 's' : '');
+        $protocol = sprintf('http%s', Tools::usingSecureMode() ? 's' : '');
 
         // Preconnect header / Resource hints
         if ((bool) Configuration::get(self::CFG_PRECONNECT) === true) {
-            header( 'Link: ' . "<{$protocol}://{$host}>; rel=preconnect" );
+            header('Link: ' . "<{$protocol}://{$host}>; rel=preconnect");
         }
 
         // Client hints header
         if ((bool) Configuration::get(self::CFG_CLIENT_HINTS) === true) {
-            header( 'Accept-CH: '. strtolower( implode( ', ', self::$client_hints ) ) );
+            header('Accept-CH: ' . strtolower(implode(', ', self::$client_hints)));
         }
 
         // Permissions policy header
         if ((bool) Configuration::get(self::CFG_PERMISSIONS_POLICY) === true) {
-            $permissions = array();
+            $permissions = [];
             foreach (self::$client_hints as $hint) {
                 $get_hint = str_replace('sec-', '', $hint);
-                if ($get_hint === 'ect') continue;
+                if ($get_hint === 'ect') {
+                    continue;
+                }
                 $permissions[] = strtolower("{$get_hint}=(\"{$protocol}://{$host}\")");
             }
             // This header replaced Feature-Policy in Chrome 88, released in January 2021.
