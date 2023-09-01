@@ -57,6 +57,7 @@ class ImageEngine extends Module
             'max' => '8.99.99',
         ];
         $this->bootstrap = true;
+        $this->module_key = '81ad4f022106180a20e1035f3c040afb'; // The key is the ID assigned from the marketplace
 
         parent::__construct();
 
