@@ -101,6 +101,8 @@ class ImageEngine extends Module
             $validDomain = $this->isValidDomain($configValueUrl);
 
             if ($configValueActive && (!Validate::isUrl($configValueUrl) || !$validDomain)) {
+                $configValueActive = false;
+                Configuration::updateValue(self::CFG_ACTIVE, $configValueActive);
                 $output .= $this->displayError($this->l('Cannot enable with invalid value for CDN URL'));
             } else {
                 if ($configValueActive) {
@@ -151,12 +153,14 @@ class ImageEngine extends Module
         if (
             !empty($mediaServer1)
             && $mediaServer1 != Configuration::get(self::CFG_URL)
+            && Configuration::get(self::CFG_ACTIVE)
         ) {
             $mediaServerLink = $this->context->link->getAdminLink('AdminPerformance', true) . '#media_servers_media_server_one';
             $alertMediaServerOverwrite = true;
         } elseif (
             empty($mediaServer1)
             && !empty(Configuration::get(self::CFG_URL))
+            && Configuration::get(self::CFG_ACTIVE)
         ) {
             $mediaServerLink = $this->context->link->getAdminLink('AdminPerformance', true) . '#media_servers_media_server_one';
             $alertMediaServerInvalid = true;
@@ -168,7 +172,7 @@ class ImageEngine extends Module
             'url_hint_link' => $cdnUrlHintLink,
             'alert_overwrite' => $alertMediaServerOverwrite,
             'alert_invalid' => $alertMediaServerInvalid,
-            'media_server_link' => $mediaServerLink,
+            'media_server_link' => $mediaServerLink ?? '',
             'media_server_1' => $mediaServer1
         ]);
 
@@ -277,8 +281,7 @@ class ImageEngine extends Module
         $helper->submit_action = 'submit' . $this->name;
 
         $helper->default_form_language = (int) Configuration::get('PS_LANG_DEFAULT');
-
-        $helper->fields_value[self::CFG_ACTIVE] = Tools::getValue(self::CFG_ACTIVE, Configuration::get(self::CFG_ACTIVE));
+        $helper->fields_value[self::CFG_ACTIVE] = Configuration::get(self::CFG_ACTIVE); // always display current state
         $helper->fields_value[self::CFG_URL] = Tools::getValue(self::CFG_URL, Configuration::get(self::CFG_URL));
         $helper->fields_value[self::CFG_PRECONNECT] = Tools::getValue(self::CFG_PRECONNECT, Configuration::get(self::CFG_PRECONNECT));
         $helper->fields_value[self::CFG_CLIENT_HINTS] = Tools::getValue(self::CFG_CLIENT_HINTS, Configuration::get(self::CFG_CLIENT_HINTS));
