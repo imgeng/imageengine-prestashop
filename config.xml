@@ -2,7 +2,7 @@
 <module>
     <name>imageengine</name>
     <displayName><![CDATA[ImageEngine CDN]]></displayName>
-    <version><![CDATA[1.0.2]]></version>
+    <version><![CDATA[1.0.3]]></version>
     <description><![CDATA[Automatically add ImageEngine CDN to media url.]]></description>
     <author><![CDATA[ImageEngine.io]]></author>
     <tab><![CDATA[front_office_features]]></tab>

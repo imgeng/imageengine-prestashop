@@ -49,7 +49,7 @@ class ImageEngine extends Module
     {
         $this->name = 'imageengine';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.2';
+        $this->version = '1.0.3';
         $this->author = 'ImageEngine.io';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -173,7 +173,7 @@ class ImageEngine extends Module
             'alert_overwrite' => $alertMediaServerOverwrite,
             'alert_invalid' => $alertMediaServerInvalid,
             'media_server_link' => $mediaServerLink ?? '',
-            'media_server_1' => $mediaServer1
+            'media_server_1' => $mediaServer1,
         ]);
 
         $form = [
