@@ -13,8 +13,8 @@
 
 {extends file="helpers/form/form.tpl"}
 {block name="field"}
+	{$smarty.block.parent}
 	{if $input.name == $cfg_url_field_name}
-		{$smarty.block.parent}
 		<div class="col-lg-4"></div>
 		<div class="col-lg-8">
 			{if $register}
@@ -51,8 +51,5 @@
 				</div>
 			</div>
 		</div>
-
-	{else}
-		{$smarty.block.parent}
 	{/if}
 {/block}
