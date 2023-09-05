@@ -21,7 +21,7 @@ then click Upload a module button in the header right and upload the downloaded 
 3. Lookup ImageEngine module in the modules list and click Configure
 4. Set Enable CDN to Enabled, Set CDN URL to the ImageEngine provided URL 
 (example: myshop.cdn.imgeng.in, if you don't have it see next step),
-Set all of the Add directives to enabled.
+Set all the Add directives to Enabled.
 5. If you don't yet have an ImageEngine account, there is a button below the URL field that invites you to register.
 After registering you will obtain the ImageEngine CDN url that you can set in the CDN URL field, 
 in the form of "yourshop.cdn.imgeng.in".

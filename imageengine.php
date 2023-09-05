@@ -49,7 +49,7 @@ class ImageEngine extends Module
     {
         $this->name = 'imageengine';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.2';
+        $this->version = '1.0.3';
         $this->author = 'ImageEngine.io';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -57,6 +57,7 @@ class ImageEngine extends Module
             'max' => '8.99.99',
         ];
         $this->bootstrap = true;
+        $this->module_key = '81ad4f022106180a20e1035f3c040afb'; // The key is the ID assigned from the marketplace
 
         parent::__construct();
 
@@ -84,6 +85,11 @@ class ImageEngine extends Module
      */
     public function getContent(): string
     {
+        return $this->postProcess() . $this->renderForm();
+    }
+
+    public function postProcess(): ?string
+    {
         $output = null;
 
         if (Tools::isSubmit('submit' . $this->name)) {
@@ -95,6 +101,8 @@ class ImageEngine extends Module
             $validDomain = $this->isValidDomain($configValueUrl);
 
             if ($configValueActive && (!Validate::isUrl($configValueUrl) || !$validDomain)) {
+                $configValueActive = false;
+                Configuration::updateValue(self::CFG_ACTIVE, $configValueActive);
                 $output .= $this->displayError($this->l('Cannot enable with invalid value for CDN URL'));
             } else {
                 if ($configValueActive) {
@@ -124,63 +132,49 @@ class ImageEngine extends Module
             }
         }
 
-        return $output . $this->displayForm();
+        return $output;
     }
 
-    public function displayForm(): string
+    public function renderForm(): string
     {
-        $websiteOrigin = $this->context->link->getBaseLink();
-        $textMediaServerWarning = '';
-        $textInfo = '
-            <div class="alert alert-info" role="alert">
-                <p class="alert-text">
-                    CSS and JavaScript will also be cached and served by ImageEngine CDN.
-                </p>
-            </div>
-            ';
-        $accountLink = 'https://control.imageengine.io/?utm_source=prestashop_module&utm_medium=imageengine&utm_campaign=admin';
         $currentCdnUrl = Configuration::get(self::CFG_URL);
+        $mediaServer1 = Configuration::get(self::PS_MEDIA_1);
         if (empty($currentCdnUrl) || strpos($currentCdnUrl, 'imgeng.in') === false) {
-            $textAccountInfo = 'Don\'t have an account yet? <br/>'
-                . '<a class="btn btn-primary" target="_blank" href="https://control.imageengine.io/register/website/?website='
-                . $websiteOrigin
-                . '"><i class="material-icons">call_made</i>&nbsp; Claim your ImageEngine Account</a>';
+            $cdnUrlHintLink = $this->context->link->getBaseLink();
+            $registerHint = true;
         } else {
-            $textAccountInfo =
-                '<a class="btn btn-primary" target="_blank" href="'
-                . $accountLink . '"><i class="material-icons">call_made</i>&nbsp; ImageEngine Account Control Panel</a>';
+            $cdnUrlHintLink = 'https://control.imageengine.io/?utm_source=prestashop_module&utm_medium=imageengine&utm_campaign=admin';
+            $registerHint = false;
         }
 
+        $alertMediaServerOverwrite = false;
+        $alertMediaServerInvalid = false;
+
         if (
-            !empty(Configuration::get(self::PS_MEDIA_1))
-            && Configuration::get(self::PS_MEDIA_1) != Configuration::get(self::CFG_URL)
+            !empty($mediaServer1)
+            && $mediaServer1 != Configuration::get(self::CFG_URL)
+            && Configuration::get(self::CFG_ACTIVE)
         ) {
             $mediaServerLink = $this->context->link->getAdminLink('AdminPerformance', true) . '#media_servers_media_server_one';
-            $textMediaServerWarning = '
-            <div class="alert medium-alert alert-warning" role="alert">
-                <p class="alert-text">
-                    We detected you are already using a media server: ' . Configuration::get(self::PS_MEDIA_1)
-                . '<br/>
-                    Enabling ImageEngine CDN will overwrite your current media server configuration.<br/>
-                    <a href="' . $mediaServerLink . '">Click here to check your media server configuration</a>.
-                </p>
-            </div>
-            ';
+            $alertMediaServerOverwrite = true;
         } elseif (
-            empty(Configuration::get(self::PS_MEDIA_1))
+            empty($mediaServer1)
             && !empty(Configuration::get(self::CFG_URL))
+            && Configuration::get(self::CFG_ACTIVE)
         ) {
             $mediaServerLink = $this->context->link->getAdminLink('AdminPerformance', true) . '#media_servers_media_server_one';
-            $textMediaServerWarning = '
-            <div class="alert medium-alert alert-warning" role="alert">
-                <p class="alert-text">
-                    We detected an invalid configuration state: Media server is empty while ImageEngine CDN is enabled.<br/>
-                    Please Save configuration on this page to set proper Media server value.<br/>
-                    You can also <a href="' . $mediaServerLink . '">click here to check your media server configuration</a>.
-                </p>
-            </div>
-            ';
+            $alertMediaServerInvalid = true;
         }
+
+        $this->context->smarty->assign([
+            'cfg_url_field_name' => self::CFG_URL,
+            'register' => $registerHint,
+            'url_hint_link' => $cdnUrlHintLink,
+            'alert_overwrite' => $alertMediaServerOverwrite,
+            'alert_invalid' => $alertMediaServerInvalid,
+            'media_server_link' => $mediaServerLink ?? '',
+            'media_server_1' => $mediaServer1,
+        ]);
 
         $form = [
             'form' => [
@@ -211,10 +205,6 @@ class ImageEngine extends Module
                         'type' => 'text',
                         'label' => $this->l('CDN URL'),
                         'name' => self::CFG_URL,
-                        'desc' => $textAccountInfo
-                            // below we display info panels unrelated to CDN URL field, until we refactor to a template
-                            . '<br/>' . $textMediaServerWarning
-                            . '<br/>' . $textInfo,
                     ],
                     [
                         'type' => 'switch',
@@ -291,8 +281,7 @@ class ImageEngine extends Module
         $helper->submit_action = 'submit' . $this->name;
 
         $helper->default_form_language = (int) Configuration::get('PS_LANG_DEFAULT');
-
-        $helper->fields_value[self::CFG_ACTIVE] = Tools::getValue(self::CFG_ACTIVE, Configuration::get(self::CFG_ACTIVE));
+        $helper->fields_value[self::CFG_ACTIVE] = Configuration::get(self::CFG_ACTIVE); // always display current state
         $helper->fields_value[self::CFG_URL] = Tools::getValue(self::CFG_URL, Configuration::get(self::CFG_URL));
         $helper->fields_value[self::CFG_PRECONNECT] = Tools::getValue(self::CFG_PRECONNECT, Configuration::get(self::CFG_PRECONNECT));
         $helper->fields_value[self::CFG_CLIENT_HINTS] = Tools::getValue(self::CFG_CLIENT_HINTS, Configuration::get(self::CFG_CLIENT_HINTS));
