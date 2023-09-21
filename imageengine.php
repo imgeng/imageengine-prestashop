@@ -49,7 +49,7 @@ class ImageEngine extends Module
     {
         $this->name = 'imageengine';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->author = 'ImageEngine.io';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
