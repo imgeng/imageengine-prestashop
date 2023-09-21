@@ -19,18 +19,18 @@
 		<div class="col-lg-8">
 			{if $register}
 				Don't have an account yet? <br/>
-				<a class="btn btn-primary" target="_blank" href="https://control.imageengine.io/register/website/?website={$url_hint_link}">
+				<a class="btn btn-primary" target="_blank" href="https://control.imageengine.io/register/website/?website={$url_hint_link|escape:'htmlall':'UTF-8'}">
 					<i class="material-icons">call_made</i>&nbsp; Claim your ImageEngine Account
 				</a>
 			{else}
-				<a class="btn btn-primary" target="_blank" href="{$url_hint_link}"><i class="material-icons">call_made</i>&nbsp; ImageEngine Account Control Panel</a>
+				<a class="btn btn-primary" target="_blank" href="{$url_hint_link|escape:'htmlall':'UTF-8'}"><i class="material-icons">call_made</i>&nbsp; ImageEngine Account Control Panel</a>
 			{/if}
 			{if $alert_overwrite}
 				<div class="alert medium-alert alert-warning" role="alert" style="margin-top: 17px">
 					<p class="alert-text">
-						We detected you are already using a media server: {$media_server_1}<br/>
+						We detected you are already using a media server: {$media_server_1|escape:'htmlall':'UTF-8'}<br/>
 						Enabling ImageEngine CDN will overwrite your current media server configuration.<br/>
-						<a href="{$media_server_link}">Click here to check your media server configuration</a>.
+						<a href="{$media_server_link|escape:'htmlall':'UTF-8'}">Click here to check your media server configuration</a>.
 					</p>
 				</div>
 			{/if}
@@ -39,7 +39,7 @@
 					<p class="alert-text">
 						We detected an invalid configuration state: Media server is empty while ImageEngine CDN is enabled.<br/>
 						Please Save configuration on this page to set proper Media server value.<br/>
-						You can also <a href="{$media_server_link}">click here to check your media server configuration</a>.
+						You can also <a href="{$media_server_link|escape:'htmlall':'UTF-8'}">click here to check your media server configuration</a>.
 					</p>
 				</div>
 			{/if}
